@@ -17,6 +17,7 @@ import FormInput from "./FormInput";
 import Image from "next/image";
 import { ChangeEvent, useState } from "react";
 import { isBase64Image } from "@/lib/utils";
+import { useUploadThing } from "@/lib/uploadthing";
 
 interface AccountProfileProps {
   user: {
@@ -58,20 +59,12 @@ function handleImage(
   }
 }
 
-function onSubmit(values: User) {
-  const blob = values.profile_photo || "";
-  const hasImageChanged = isBase64Image(blob);
-
-  if (hasImageChanged) {
-    //!TODO: upload to uploadthing
-  }
-}
-
 export default function AccountProfile({
   user,
   btnTitle,
 }: AccountProfileProps) {
   const [file, setFile] = useState<File[]>([]);
+  const { startUpload } = useUploadThing("media");
   const form = useForm({
     resolver: zodResolver(UserValidation),
     defaultValues: {
@@ -81,6 +74,19 @@ export default function AccountProfile({
       bio: user?.bio || "",
     },
   });
+
+  async function onSubmit(values: User) {
+    const blob = values.profile_photo;
+    const hasImageChanged = isBase64Image(blob);
+
+    if (hasImageChanged) {
+      const imgRes = await startUpload(file);
+
+      if (imgRes && imgRes[0].url) {
+        values.profile_photo = imgRes[0].url;
+      }
+    }
+  }
 
   return (
     <Form {...form}>
