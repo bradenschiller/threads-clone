@@ -12,7 +12,7 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en">
+      <html lang="en" suppressHydrationWarning>
         <body className={`${inter.className} bg-dark-1`}>{children}</body>
       </html>
     </ClerkProvider>
